@@ -1,4 +1,4 @@
-# Django settings for testproject project.
+import sys
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -98,7 +98,6 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
     'cbvtoolkit',
-    'django_nose',
 )
 
 STATIC_URL = '/static/'
@@ -114,4 +113,8 @@ PASSWORD_HASHERS = (
 
 AUTH_USER_MODEL = 'auth.User'
 
-TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+if 'test' in sys.argv:
+    TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+    INSTALLED_APPS += (
+        'django_nose',
+    )
