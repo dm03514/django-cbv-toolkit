@@ -6,25 +6,27 @@ More Class Based Views for common uses
 ## CSVDownloadView
 
 Provides a simple CBV interface to creating views that allow data to be downloaded as CSV.
+Often find that I need to create views to allow user to download a CSV.  This provides an
+OOP way of doing that using django's built in CBVs.
 
 ### Usage:
-- subclass CSVDownloadView
+- subclass `CSVDownloadView`
 - define `columns` which is a tuple of strings, (columns will appear in this order)
 - define `filename` string the name of the file to be downloaded
 - define `get_csv_data` instace method return an iterable of dictionaries
 
 ### Example: 
 
-from cbvtoolkit.views import CSVDownloadView
+    from cbvtoolkit.views import CSVDownloadView
 
-MyCSVDownloadView(CSVDownloadView):
-    columns = ('name', 'age')
-    filename = 'yourfile.csv'
+    MyCSVDownloadView(CSVDownloadView):
+        columns = ('name', 'age')
+        filename = 'yourfile.csv'
 
-    def get_csv_data(self):
-        """
-        Generates 10 random dictionaries, using the keys specified in keys.
-        @return must return iterable of dictionaries
-        """
-        for i in range(10):
-            yield dict((column, str(i)) for column in self.columns) 
+        def get_csv_data(self):
+            """
+            Generates 10 random dictionaries, using the keys specified in keys.
+            @return must return iterable of dictionaries
+            """
+            for i in range(10):
+                yield dict((column, str(i)) for column in self.columns) 
