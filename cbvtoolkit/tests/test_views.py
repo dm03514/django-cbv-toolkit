@@ -1,8 +1,10 @@
 import csv
 import StringIO
+from django import forms
+from django.http import HttpResponse
 from django.test import TestCase
 from django.test.client import RequestFactory
-from cbvtoolkit.views import CSVDownloadView
+from cbvtoolkit.views import CSVDownloadView, MultiFormView
 
 
 class TestCSVDownloadView(CSVDownloadView):
@@ -36,3 +38,30 @@ class CSVDownloadViewIntegrationTests(TestCase):
         self.assertEqual(list(TestCSVDownloadView.columns), reader.next())
         for i in range(10):
             self.assertEqual([str(i)] * 3, reader.next()) 
+
+
+class EmailForm(forms.Form):
+    email = forms.EmailField()
+
+class UsernameForm(forms.Form):
+    username = forms.CharField()
+
+class TestMultiFormView(MultiFormView):
+    forms = (EmailForm, UsernameForm)
+
+    def get_template_names(self):
+        return ''
+
+class MultiFormViewIntegrationTests(TestCase):
+
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.view = TestMultiFormView.as_view()
+
+    def test_multi_form_view_get_success(self):
+        request = self.factory.get('/')
+        response = self.view(request)
+        self.assertIn('forms', response.context_data)
+        forms = response.context_data['forms']
+        self.assertEqual(len(forms), 2)
+        import ipdb; ipdb.set_trace();
