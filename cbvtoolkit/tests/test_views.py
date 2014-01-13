@@ -46,22 +46,44 @@ class EmailForm(forms.Form):
 class UsernameForm(forms.Form):
     username = forms.CharField()
 
+class Placeholder(object): pass
+
 class TestMultiFormView(MultiFormView):
     forms = (EmailForm, UsernameForm)
 
     def get_template_names(self):
         return ''
 
+
+class TestMultiFormViewCustomInstantiationMethods(TestMultiFormView):
+    def get_emailform_instance(self):
+        return Placeholder()
+
+    def get_usernameform_instance(self):
+        return Placeholder()
+
 class MultiFormViewIntegrationTests(TestCase):
 
     def setUp(self):
         self.factory = RequestFactory()
-        self.view = TestMultiFormView.as_view()
 
     def test_multi_form_view_get_success(self):
+        view = TestMultiFormView.as_view()
         request = self.factory.get('/')
-        response = self.view(request)
+        response = view(request)
         self.assertIn('forms', response.context_data)
         forms = response.context_data['forms']
         self.assertEqual(len(forms), 2)
-        import ipdb; ipdb.set_trace();
+
+    def test_multi_form_view_get_custom_instantiation_methods(self):
+        """
+        Tests that both forms can be instantiated using user-defined methods.
+        """
+        view = TestMultiFormViewCustomInstantiationMethods.as_view()
+        request = self.factory.get('/')
+        response = view(request)
+        self.assertIn('forms', response.context_data)
+        forms = response.context_data['forms']
+        self.assertEqual(len(forms), 2)
+        for form_instance in forms.values():
+            self.assertIsInstance(form_instance, Placeholder)

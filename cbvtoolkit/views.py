@@ -52,17 +52,6 @@ class MultiFormView(ContextMixin, TemplateResponseMixin, View):
         """
         raise NotImplementedError()
 
-    def get(self, request, *args, **kwargs):
-        return self.render_to_response(self.get_context_data()) 
-
-    def get_context_data(self, **kwargs):
-        context = super(MultiFormView, self).get_context_data(**kwargs)
-        context['forms'] = self.build_forms()
-        return context
-
-    def post(self, request, *args, **kwargs):
-        raise NotImplementedError()
-
     def build_forms(self, **kwargs):
         """
         Returns a dictionary of forms, keyed by form class name lowercased.
@@ -85,11 +74,22 @@ class MultiFormView(ContextMixin, TemplateResponseMixin, View):
         self._convert_forms()
         return super(MultiFormView, self).dispatch(request, *args, **kwargs)
 
+    def get(self, request, *args, **kwargs):
+        return self.render_to_response(self.get_context_data()) 
+
+    def get_context_data(self, **kwargs):
+        context = super(MultiFormView, self).get_context_data(**kwargs)
+        context['forms'] = self.build_forms()
+        return context
+
+    def post(self, request, *args, **kwargs):
+        raise NotImplementedError()
+
     def _convert_forms(self):
         """
         Takes a collection a form classes and creates a mapping of class name strings
         to the classes.
-        @return void - sets the attribute _forms
+        @return void - sets the attribute `_forms_dict`
         """
         self._forms_dict = dict((form.__name__.lower(), form) for form in self.forms)
 
