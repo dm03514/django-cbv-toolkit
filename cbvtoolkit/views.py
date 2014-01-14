@@ -1,5 +1,5 @@
 import csv
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import render
 from django.views.generic import TemplateView
 from django.views.generic.base import View, TemplateResponseMixin, ContextMixin
@@ -71,7 +71,7 @@ class MultiFormView(ContextMixin, TemplateResponseMixin, View):
         Converts the `forms` collection into a dictionary with string keys that can
         be used to reference the form classes.
         """
-        self._convert_forms()
+        self._build_form_map()
         return super(MultiFormView, self).dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
@@ -79,19 +79,55 @@ class MultiFormView(ContextMixin, TemplateResponseMixin, View):
 
     def get_context_data(self, **kwargs):
         context = super(MultiFormView, self).get_context_data(**kwargs)
-        context['forms'] = self.build_forms()
+        context['forms'] = self.build_forms(**kwargs)
         return context
 
     def post(self, request, *args, **kwargs):
-        raise NotImplementedError()
+        """
+        Processes a single form, requires a form identifier in the params named `form_name`.
+        """
+        form_name = request.POST.get('form_name')
+        if form_name not in self._forms_dict:
+            return HttpResponseForbidden()
 
-    def _convert_forms(self):
+        form = self._forms_dict[form_name](request.POST)
+        if form.is_valid():
+            return self._form_valid(form_name, form)
+        else:
+            kwargs = {
+                form_name: form,
+            }
+            return self.render_to_response(self.get_context_data(**kwargs)) 
+
+    def _build_form_map(self):
         """
         Takes a collection a form classes and creates a mapping of class name strings
         to the classes.
         @return void - sets the attribute `_forms_dict`
         """
         self._forms_dict = dict((form.__name__.lower(), form) for form in self.forms)
+
+    def _form_valid(self, form_name, form):
+        """
+        Delegates the form to the correct form_<<form_name>>_valid method
+        @param form_name string
+        @param form Object 
+        """
+        method_name = '{}_valid'.format(form_name)
+        getattr(self, method_name)(form)
+        return HttpResponseRedirect(self._get_success_url(form_name))
+
+    def _get_success_url(self, form_name):
+        """
+        Checks to see if there is a specific success_url method defined for this form
+        if not defaults to `self.success_url`
+        @return string
+        """
+        method_name = 'get_{}_success_url'.format(form_name)
+        if hasattr(self, method_name):
+            return getattr(self, method_name)()
+        else:
+            return self.success_url
 
     def _get_form_instance(self, form_name):
         """
