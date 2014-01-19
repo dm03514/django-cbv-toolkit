@@ -42,3 +42,30 @@ Allows one view to render and validate multiple different form classes.  Sometim
 - subclass 'MultiFormView'
 - define class property 'forms' which should be a tuple of Form classes
 - Each class method will reference the forms by the `class.__name__.lower`, so `MyTestForm` will be referenced by methods as `mytestform`.
+- There are a couple of 'hooks' avaiable:
+    1. `{{form_name_str}}_valid` - action to be performed if form.valid evaluates to true.  
+            Does not need to return anything.
+    2. `get_{{form_name_str>}}_success_url` - Allows for a dynamic redirect for each form. 
+            Must return a string
+    3. `get_{{form_name_str}}_instance` - Controls form instantiation.  Must return a form instance.
+            Will be called when an unbound form is created.  If not defined, the form will just be 
+            instantiated without any argumens ie. `YourForm()` 
+
+
+### Example:
+
+    from cbvtoolkit.views import MultiFormView
+    # DEFINE your forms
+    from yourapp.forms import EmailForm, UsernameForm
+    
+    class MyMultiFormView(MultiFormView):
+        forms = (EmailForm, UsernameForm) 
+        success_url = '/someurl/'
+
+        def emailform_valid(self, form):
+            # do something
+            return 
+
+        def usernameform_valid(self, form):
+            # do something
+            return
