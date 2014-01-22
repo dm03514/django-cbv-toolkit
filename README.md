@@ -69,3 +69,11 @@ Allows one view to render and validate multiple different form classes.  Sometim
         def usernameform_valid(self, form):
             # do something
             return
+
+Forms are availble inside your template through the `forms` variable.  Given the above example,
+a form can be rendered using {{ forms.emailform.as_p }}.
+
+Each form in the templaate must include a hidden input, which identifies that form.
+
+    <input type="hidden" name="form_type" value="emailform" />
+ 
