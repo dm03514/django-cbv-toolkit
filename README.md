@@ -75,5 +75,5 @@ a form can be rendered using {{ forms.emailform.as_p }}.
 
 Each form in the templaate must include a hidden input, which identifies that form.
 
-    <input type="hidden" name="form_type" value="emailform" />
+    <input type="hidden" name="form_name" value="emailform" />
  
