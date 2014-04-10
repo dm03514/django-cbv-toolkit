@@ -90,7 +90,7 @@ class MultiFormView(ContextMixin, TemplateResponseMixin, View):
         if form_name not in self._forms_dict:
             return HttpResponseForbidden()
 
-        form = self._forms_dict[form_name](request.POST)
+        form = self._forms_dict[form_name](request.POST, request.FILES)
         if form.is_valid():
             return self._form_valid(form_name, form)
         else:
